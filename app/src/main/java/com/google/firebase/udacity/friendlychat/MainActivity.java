@@ -129,7 +129,10 @@ public class MainActivity extends AppCompatActivity {
         mChildEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
+                // The getValue() method can take a class as a parameter, and the code will de-serialize the message
+                // This works because the messages object has the exact same field as the FriendlyMessage POJO
+                FriendlyMessage friendlyMessage = dataSnapshot.getValue(FriendlyMessage.class);
+                mMessageAdapter.add(friendlyMessage);
             }
 
             @Override
