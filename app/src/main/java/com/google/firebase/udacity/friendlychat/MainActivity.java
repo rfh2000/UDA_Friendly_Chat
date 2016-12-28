@@ -30,7 +30,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
@@ -169,15 +168,18 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         mMessagesDatabaseReference.addChildEventListener(mChildEventListener);
+
         mAuthStateListener = new FirebaseAuth.AuthStateListener(){
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null){
                     // user is signed in
-                    Toast.makeText(MainActivity.this, "You are now signed in", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(MainActivity.this, "You are now signed in", Toast.LENGTH_SHORT).show();
+                    onSignedInInitialize(user.getDisplayName());
                 } else {
                     // user is signed out
+                    onSignedOutCleanup();
                     startActivityForResult(
                             AuthUI.getInstance()
                                     .createSignInIntentBuilder()
@@ -189,6 +191,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    private void onSignedInInitialize(String displayName) {
+        mUsername = displayName;
+    }
+
+    private void onSignedOutCleanup() {
     }
 
     @Override
