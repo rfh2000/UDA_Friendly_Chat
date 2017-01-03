@@ -23,6 +23,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -35,6 +36,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -44,6 +46,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
         mFirebaseStorage = FirebaseStorage.getInstance();
         mMessagesDatabaseReference = mFirebaseDatabase.getReference().child("messages");
         mChatPhotosStorageReference = mFirebaseStorage.getReference().child("chat_photos");
-
 
         // Initialize references to views
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -207,7 +209,18 @@ public class MainActivity extends AppCompatActivity {
                 // Takes the last part of the path segment from local storage and uses that to store in FB
                 // content://local_images/foo/4 (in this e.g. last segment would be '4'
                 StorageReference photoRef = mChatPhotosStorageReference.child(selectedImageUri.getLastPathSegment());
-//                finish();
+
+                // Upload file to FB Storage
+                photoRef.putFile(selectedImageUri).addOnSuccessListener(
+                        this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                                Log.i(TAG, "Uri is " + downloadUrl);
+                                FriendlyMessage friendlyMessage = new FriendlyMessage(null, mUsername, downloadUrl.toString());
+                                mMessagesDatabaseReference.push().setValue(friendlyMessage);
+                            }
+                        });
             }
         }
     }
